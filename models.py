@@ -1,9 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 #representation of the information of a single user registering
 class User(BaseModel):
     name: str
-    email: EmailStr #Emailstr used instead of str to validate if a valid email has been input
+    email: str
     phone: str
     password: str
 
