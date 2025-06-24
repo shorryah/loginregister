@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 # a user's information is taken from the database and impt info like name, email and phone number is returned
 # password not returned for personal data protection
@@ -16,5 +16,13 @@ def all_users(users):
 # defines data model for when user is logging in
 #purpose of putting here is so that when user is prompted to login, it is viewed in this format
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
+
+
+def movie_format(movie) -> dict:
+    return {
+        "id": str(movie["_id"]),
+        "title": movie["title"],
+        "description": movie["description"]
+    }

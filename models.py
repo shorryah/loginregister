@@ -7,4 +7,7 @@ class User(BaseModel):
     phone: str
     password: str
 
-
+#representation of the information of a single movie data
+class Movie(BaseModel):
+    title: str = " "
+    description: str = " "

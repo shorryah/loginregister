@@ -1,9 +1,20 @@
 from database import collection 
 from models import User
 from passlib.context import CryptContext #used to hash and verify passwords; impt to protect a user's password
+from schemas import format_user
 import re  #regex module to check if password is appropriate
+from jwttoken import create_access_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")  #password hashing done using bycrpt
+
+class Hasher:
+    @staticmethod
+    def verify_password(plain_password: str, hashed_password: str):
+        return pwd_context.verify(plain_password, hashed_password)
+
+    @staticmethod
+    def get_password_hash(password: str):
+        return pwd_context.hash(password)
 
 def is_valid_name(name):
     return 2 < len(name) <= 70  # ensures that name is appropriate with at least 3-70 characters
@@ -22,15 +33,9 @@ def is_valid_email_domain(email):
 def is_valid_phone(phone):
     return phone.isdigit() and len(phone) == 8  #checks if phone no. has 8 digits exact
 
-def hash_pw(pw):
-    return pwd_context.hash(pw)  #returns hashed version of a password; if we output the password, a hashed version will be printed
-
-def verify_pw(pw, hashed):
-    return pwd_context.verify(pw, hashed)  #checks plain password with the hashed one
-
 def is_valid_password(pw):
     regex = r"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{9,}$"  #checks if password has at least 9 char, 1 Uppercase letter, 1 Special char and 1 num
-    return re.match(regex, pw) 
+    return re.match(regex, pw)
 
 #checks if registration is valid based on the above constraints
 # if anything is invalid, the standard error message will be printed based on the error made
@@ -55,9 +60,9 @@ def register_user(user: User):
         i += 1
     
     if all_errors:
-        return False, all_errors #returns all the er
+        return False, all_errors  #returns all the error messages
     
-    user.password = hash_pw(user.password)  #hashes password before saving
+    user.password = Hasher.get_password_hash(user.password)  #hashes password before saving
     collection.insert_one(user.model_dump())  #saves user to the database
     return True, "User saved" #success message
 
@@ -66,7 +71,7 @@ def login_user(email, password):
     user = collection.find_one({"email": email})  #find user through email
     if not user:
         return False, "Email not found"   #returns this message if email not found in database
-    if not verify_pw(password, user["password"]):  
+    if not Hasher.verify_password(password, user["password"]):  
         return False, "Incorrect password"   #returns this message if password does not match the hashed one
-    return True, "Login successful"   #returns this if both email and password is correct
-
+    token = create_access_token(data={"sub": user["email"]})
+    return True, {"user": format_user(user), "access_token": token, "token_type": "bearer"}

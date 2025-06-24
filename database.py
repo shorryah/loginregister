@@ -6,5 +6,7 @@ uri = "mongodb+srv://shorryah:mongo123@cluster0.9cfchjz.mongodb.net/?retryWrites
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
 
-db = client.user_db  # a database is created
-collection = db["user_data"]  #creates a collection where all the data will be stored
+db = client["user_db"]
+collection = db["user_data"]  #collection where all the login register data will be stored
+movie_collection = db["movies_data"] #collection where all the movie data will be stored
+
